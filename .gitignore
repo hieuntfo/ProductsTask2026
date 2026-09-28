@@ -1,0 +1,13 @@
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Logs
+*.log
+
+# Temp & local cache
+.cache/
+scratch/

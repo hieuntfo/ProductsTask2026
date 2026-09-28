@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VnExpress Products — Quản Lý Dự Án & Công Việc</title>
+  <meta name="description" content="Công cụ quản lý công việc và dự án chuẩn Asana cho Phòng Product VnExpress (20 nhân sự UI, UX, SEO, Data)">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%239f224e'/><text x='50%' y='68%' font-size='56' font-weight='800' fill='white' text-anchor='middle'>V</text></svg>">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- =====================================================================
+         SIDEBAR (Asana Left Navigation)
+         ===================================================================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper" id="nav-brand-btn">
+          <div class="brand-logo-badge">V</div>
+          <div class="brand-text">
+            <h1>VnExpress</h1>
+            <span>Products Hub</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Không gian làm việc</div>
+        
+        <div class="nav-item active" data-view="tasks" data-sub="all" id="nav-all-tasks">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Tất cả công việc</span>
+          <span class="badge" id="sidebar-tasks-count">0</span>
+        </div>
+
+        <div class="nav-item" data-view="tasks" data-sub="active" id="nav-active-tasks">
+          <i class="fa-solid fa-bolt-lightning" style="color: #2563eb;"></i>
+          <span>Đang triển khai</span>
+          <span class="badge" id="sidebar-active-count">0</span>
+        </div>
+
+        <div class="nav-item" data-view="projects" id="nav-projects">
+          <i class="fa-solid fa-rocket" style="color: #9f224e;"></i>
+          <span>Quản lý Dự án</span>
+          <span class="badge" id="sidebar-projects-count">5</span>
+        </div>
+
+        <div class="nav-item" data-view="members" id="nav-members">
+          <i class="fa-solid fa-users" style="color: #6366f1;"></i>
+          <span>Nhân sự (20) & User/Pass</span>
+          <span class="badge">20</span>
+        </div>
+
+        <div class="nav-item" data-view="reports" id="nav-reports">
+          <i class="fa-solid fa-chart-pie" style="color: #059669;"></i>
+          <span>Báo cáo & Thống kê</span>
+        </div>
+
+        <div class="nav-item" data-view="trash" id="nav-trash">
+          <i class="fa-solid fa-trash-can" style="color: #64748b;"></i>
+          <span>Thùng rác</span>
+          <span class="badge" id="sidebar-trash-count">0</span>
+        </div>
+
+        <div class="nav-item" data-view="config" id="nav-config">
+          <i class="fa-solid fa-sliders" style="color: #d97706;"></i>
+          <span>Cấu hình Hệ thống</span>
+        </div>
+
+        <div class="nav-section-title" style="margin-top: 10px;">Dự án trọng điểm</div>
+        <div id="sidebar-pinned-projects">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="nav-section-title" style="margin-top: 10px;">Nhóm chuyên môn</div>
+        <div class="nav-item" data-filter-team="Quản lý" style="padding-left: 20px;">
+          <span class="project-dot" style="background-color: var(--team-management);"></span>
+          <span>Quản lý & PO</span>
+        </div>
+        <div class="nav-item" data-filter-team="UX/UI Designer" style="padding-left: 20px;">
+          <span class="project-dot" style="background-color: var(--team-uxui);"></span>
+          <span>UX/UI Designer</span>
+        </div>
+        <div class="nav-item" data-filter-team="SEO" style="padding-left: 20px;">
+          <span class="project-dot" style="background-color: var(--team-seo);"></span>
+          <span>SEO Specialist</span>
+        </div>
+        <div class="nav-item" data-filter-team="Data" style="padding-left: 20px;">
+          <span class="project-dot" style="background-color: var(--team-data);"></span>
+          <span>Data & AI</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sync-status-badge" id="sync-status-indicator" title="Trạng thái kết nối Supabase">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="sync-status-text">Supabase Online</span>
+        </div>
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Đổi giao diện Sáng / Tối">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- =====================================================================
+         MAIN WRAPPER
+         ===================================================================== -->
+    <main class="main-wrapper">
+      
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="global-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="global-search-input" class="global-search-input" placeholder="Tìm kiếm công việc, dự án, người làm... (nhấn / để tìm)">
+            <button class="search-clear-btn" id="search-clear-btn"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="btn-primary" id="btn-create-task">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tạo Công việc</span>
+          </button>
+          <button class="btn-secondary" id="btn-create-project">
+            <i class="fa-solid fa-folder-plus"></i>
+            <span>Tạo Dự án</span>
+          </button>
+
+          <div class="filter-divider"></div>
+
+          <div class="current-user-badge" id="btn-user-credentials" title="Xem danh sách 20 tài khoản & User/Password">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hieu" class="user-avatar-mini" alt="User Avatar">
+            <span class="user-name-mini" id="current-user-name">Nguyễn Trung Hiếu</span>
+            <i class="fa-solid fa-key" style="font-size: 11px; color: var(--brand-primary); margin-left: 2px;"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Header & Sub-Tabs -->
+      <section class="view-header">
+        <div class="view-title-row">
+          <div class="view-title-area">
+            <div class="view-icon-badge" id="view-icon-badge">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <h2 class="view-title" id="view-title-text">Tất cả công việc</h2>
+              <p class="view-subtitle" id="view-subtitle-text">Quản lý và theo dõi tiến độ toàn bộ công việc phòng Product VnExpress</p>
+            </div>
+          </div>
+
+          <div class="view-tabs" id="view-tabs-container">
+            <button class="tab-btn active" data-tab="list" id="tab-btn-list">
+              <i class="fa-solid fa-table-list"></i>
+              <span>Danh sách</span>
+            </button>
+            <button class="tab-btn" data-tab="board" id="tab-btn-board">
+              <i class="fa-solid fa-table-columns"></i>
+              <span>Bảng Kanban</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Precision Filter Bar (Asana Style Filters) -->
+      <section class="filter-toolbar" id="filter-toolbar">
+        <!-- Date Filters -->
+        <div class="filter-group">
+          <span class="filter-label"><i class="fa-regular fa-calendar"></i> Hạn chót:</span>
+          <button class="filter-pill active" data-filter-date="all">Tất cả thời gian</button>
+          <button class="filter-pill warning" data-filter-date="today">Hôm nay <span class="badge" id="pill-count-today">0</span></button>
+          <button class="filter-pill danger" data-filter-date="overdue">Quá hạn <span class="badge" id="pill-count-overdue">0</span></button>
+          <button class="filter-pill" data-filter-date="soon">Sắp hết hạn (3 ngày)</button>
+          <button class="filter-pill" data-filter-date="custom" id="pill-custom-date">Theo ngày</button>
+          <input type="date" id="filter-custom-date-input" class="filter-date-input" style="display: none;" value="2026-09-28">
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Team Filters -->
+        <div class="filter-group">
+          <span class="filter-label"><i class="fa-solid fa-people-group"></i> Nhóm:</span>
+          <button class="filter-pill active" data-filter-team="all">Tất cả nhóm</button>
+          <button class="filter-pill" data-filter-team="Quản lý">Quản lý</button>
+          <button class="filter-pill" data-filter-team="UX/UI Designer">UX/UI Designer</button>
+          <button class="filter-pill" data-filter-team="SEO">SEO</button>
+          <button class="filter-pill" data-filter-team="Data">Data</button>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Status Filters -->
+        <div class="filter-group">
+          <span class="filter-label"><i class="fa-solid fa-signal"></i> Trạng thái:</span>
+          <button class="filter-pill active" data-filter-status="all">Tất cả</button>
+          <button class="filter-pill" data-filter-status="Chưa làm">Chưa làm</button>
+          <button class="filter-pill" data-filter-status="Đang làm">Đang làm</button>
+          <button class="filter-pill danger" data-filter-status="Bị nghẽn">Bị nghẽn</button>
+          <button class="filter-pill success" data-filter-status="Hoàn thành">Hoàn thành</button>
+        </div>
+
+        <!-- Reset Button -->
+        <button class="reset-filters-btn" id="btn-reset-filters" title="Xóa tất cả bộ lọc">
+          <i class="fa-solid fa-rotate-left"></i> Đặt lại
+        </button>
+      </section>
+
+      <!-- Main Workspace Scroll Area -->
+      <div class="workspace-scroll" id="workspace-scroll">
+        
+        <!-- KPI Stats Quick Banner -->
+        <div class="stats-banner" id="stats-banner">
+          <div class="stat-card">
+            <div class="stat-info">
+              <h4>Tổng Công Việc</h4>
+              <div class="stat-value" id="stat-total-tasks">15</div>
+            </div>
+            <div class="stat-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h4>Đang Triển Khai</h4>
+              <div class="stat-value" id="stat-in-progress" style="color: #2563eb;">8</div>
+            </div>
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+              <i class="fa-solid fa-spinner"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h4>Bị Nghẽn / Rủi Ro</h4>
+              <div class="stat-value" id="stat-blocked" style="color: #dc2626;">2</div>
+            </div>
+            <div class="stat-icon" style="background: rgba(220, 38, 38, 0.12); color: #dc2626;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h4>Hạn Hôm Nay</h4>
+              <div class="stat-value" id="stat-due-today" style="color: #d97706;">2</div>
+            </div>
+            <div class="stat-icon" style="background: rgba(217, 119, 6, 0.12); color: #d97706;">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <h4>Hoàn Thành</h4>
+              <div class="stat-value" id="stat-completed" style="color: #16a34a;">2</div>
+            </div>
+            <div class="stat-icon" style="background: rgba(22, 163, 74, 0.12); color: #16a34a;">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 1: TASKS LIST CONTAINER -->
+        <div id="view-tasks-list" class="view-content-pane">
+          <div class="tasks-table-container">
+            <table class="tasks-table">
+              <thead>
+                <tr>
+                  <th style="width: 44px;"></th>
+                  <th>Tên Công Việc</th>
+                  <th>Dự Án</th>
+                  <th>Nhóm</th>
+                  <th>Người Làm</th>
+                  <th>Hạn Chót</th>
+                  <th>Độ Ưu Tiên</th>
+                  <th>Trạng Thái</th>
+                  <th style="text-align: right; width: 60px;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tasks-table-body">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW 2: TASKS KANBAN BOARD CONTAINER -->
+        <div id="view-tasks-board" class="view-content-pane" style="display: none;">
+          <div class="kanban-board" id="kanban-board-container">
+            <!-- Columns rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- VIEW 3: PROJECTS GRID CONTAINER -->
+        <div id="view-projects" class="view-content-pane" style="display: none;">
+          <div class="projects-grid" id="projects-grid-container">
+            <!-- Projects rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- VIEW 4: MEMBERS CONTAINER -->
+        <div id="view-members" class="view-content-pane" style="display: none;">
+          <div class="members-header-bar">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 700;">Danh Sách 20 Nhân Sự Phòng Product</h3>
+              <p style="font-size: 12.5px; color: var(--text-muted);">Hiển thị đầy đủ thông tin tài khoản đăng nhập, vị trí, địa điểm, dự án và khối lượng công việc</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-secondary" id="btn-export-members-csv"><i class="fa-solid fa-file-csv"></i> Xuất Danh Sách Nhân Sự</button>
+            </div>
+          </div>
+          <div class="members-grid" id="members-grid-container">
+            <!-- 20 members rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- VIEW 5: REPORTS & ANALYTICS CONTAINER -->
+        <div id="view-reports" class="view-content-pane" style="display: none;">
+          <div class="reports-container" id="reports-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- VIEW 6: TRASH BIN CONTAINER -->
+        <div id="view-trash" class="view-content-pane" style="display: none;">
+          <div class="trash-container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 16px; font-weight: 700;">Thùng Rác & Khôi Phục</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted);">Các công việc và dự án đã xóa có thể được khôi phục hoặc xóa vĩnh viễn</p>
+              </div>
+              <button class="btn-secondary" id="btn-empty-trash" style="color: #dc2626;"><i class="fa-solid fa-trash-arrow-up"></i> Xóa sạch thùng rác</button>
+            </div>
+            <div id="trash-items-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Deleted items -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 7: CONFIG SYSTEM CONTAINER -->
+        <div id="view-config" class="view-content-pane" style="display: none;">
+          <div class="config-container">
+            <div class="config-section">
+              <h3 class="config-title"><i class="fa-solid fa-cloud"></i> Cấu Hình Supabase Database</h3>
+              <p style="font-size: 12.5px; color: var(--text-muted);">Hệ thống đồng bộ dữ liệu hai chiều với bảng `projects`, `members`, `tasks` trên Supabase.</p>
+              <div class="config-grid-2">
+                <div class="form-group">
+                  <label>Supabase URL</label>
+                  <input type="text" id="cfg-supabase-url" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                  <label>Chế độ lưu trữ</label>
+                  <select id="cfg-storage-mode" class="form-control">
+                    <option value="supabase">Supabase Live Cloud (Mặc định)</option>
+                    <option value="local">Offline LocalStorage Mode</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-secondary" id="btn-test-supabase"><i class="fa-solid fa-plug-circle-check"></i> Kiểm Tra Kết Nối Supabase</button>
+                <button class="btn-secondary" id="btn-resync-supabase"><i class="fa-solid fa-rotate"></i> Đồng Bộ Lại Dữ Liệu Ngay</button>
+              </div>
+            </div>
+
+            <div class="config-section">
+              <h3 class="config-title"><i class="fa-solid fa-sliders"></i> Tùy Chỉnh Các Thành Phần Dự Án</h3>
+              <p style="font-size: 12.5px; color: var(--text-muted);">File cấu hình lưu tại <code style="font-family: var(--font-mono); background: var(--bg-surface-alt); padding: 2px 6px; border-radius: 4px;">config.js</code>. Bạn có thể sửa đổi quy tắc trạng thái, KPI, và danh mục nhóm.</p>
+              <div class="form-group">
+                <label>Tên Dự Án Mặc Định</label>
+                <input type="text" id="cfg-app-name" class="form-control" value="VnExpress Products">
+              </div>
+              <div class="form-group">
+                <label>Ngày Mốc Hệ Thống</label>
+                <input type="date" id="cfg-current-date" class="form-control" value="2026-09-28">
+              </div>
+              <div class="form-group">
+                <label>Trực Quan Hóa JSON Cấu Hình Đầy Đủ</label>
+                <textarea id="cfg-json-editor" class="form-control" style="font-family: var(--font-mono); height: 160px; font-size: 12px;"></textarea>
+              </div>
+              <button class="btn-primary" id="btn-save-config" style="align-self: flex-start;"><i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- =====================================================================
+         SLIDE-OVER TASK DETAIL DRAWER (Asana Style Right Pane)
+         ===================================================================== -->
+    <div class="drawer-backdrop" id="task-drawer-backdrop"></div>
+    <div class="drawer-pane" id="task-drawer">
+      <div class="drawer-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="btn-secondary" id="drawer-btn-complete-toggle" style="height: 32px; font-size: 12px; padding: 0 12px;">
+            <i class="fa-regular fa-circle-check"></i> <span>Đánh dấu hoàn thành</span>
+          </button>
+          <span class="status-badge" id="drawer-status-chip">Đang làm</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-icon" id="drawer-btn-delete" title="Xóa công việc (chuyển vào thùng rác)"><i class="fa-solid fa-trash-can"></i></button>
+          <button class="btn-icon" id="drawer-btn-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="drawer-body">
+        <input type="text" id="drawer-task-title" class="drawer-task-title-input" placeholder="Tiêu đề công việc...">
+
+        <div class="drawer-fields-grid">
+          <span class="field-label"><i class="fa-solid fa-folder-tree"></i> Dự án</span>
+          <div>
+            <select id="drawer-task-project" class="form-control" style="height: 34px;">
+              <!-- Projects options -->
+            </select>
+          </div>
+
+          <span class="field-label"><i class="fa-solid fa-user"></i> Người làm</span>
+          <div>
+            <select id="drawer-task-assignee" class="form-control" style="height: 34px;">
+              <!-- 20 members options -->
+            </select>
+          </div>
+
+          <span class="field-label"><i class="fa-solid fa-people-group"></i> Nhóm chuyên môn</span>
+          <div>
+            <select id="drawer-task-team" class="form-control" style="height: 34px;">
+              <option value="Quản lý">Quản lý & PO</option>
+              <option value="UX/UI Designer">UX/UI Designer</option>
+              <option value="SEO">SEO Specialist</option>
+              <option value="Data">Data & AI</option>
+            </select>
+          </div>
+
+          <span class="field-label"><i class="fa-regular fa-calendar-check"></i> Hạn chót</span>
+          <div>
+            <input type="date" id="drawer-task-due" class="form-control" style="height: 34px;">
+          </div>
+
+          <span class="field-label"><i class="fa-solid fa-arrow-up-right-dots"></i> Độ ưu tiên</span>
+          <div>
+            <select id="drawer-task-priority" class="form-control" style="height: 34px;">
+              <option value="Thấp">Thấp</option>
+              <option value="Trung bình">Trung bình</option>
+              <option value="Cao">Cao</option>
+              <option value="Khẩn cấp">Khẩn cấp</option>
+            </select>
+          </div>
+
+          <span class="field-label"><i class="fa-solid fa-signal"></i> Trạng thái</span>
+          <div>
+            <select id="drawer-task-status" class="form-control" style="height: 34px;">
+              <option value="Chưa làm">Chưa làm</option>
+              <option value="Đang làm">Đang làm</option>
+              <option value="Bị nghẽn">Bị nghẽn</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-align-left"></i> Mô tả chi tiết</label>
+          <textarea id="drawer-task-desc" class="form-control" style="height: 110px; font-size: 13px;" placeholder="Mô tả yêu cầu, kết quả bàn giao, tài liệu đính kèm..."></textarea>
+        </div>
+
+        <!-- Interactive Subtasks Checklist -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label style="font-size: 13px; font-weight: 700; color: var(--text-main);"><i class="fa-solid fa-list-check"></i> Checklist công việc con (<span id="drawer-subtasks-count">0/0</span>)</label>
+            <button class="btn-secondary" id="drawer-btn-add-subtask" style="height: 28px; font-size: 11.5px; padding: 0 10px;">
+              <i class="fa-solid fa-plus"></i> Thêm mục con
+            </button>
+          </div>
+          <div class="subtasks-list-container" id="drawer-subtasks-list">
+            <!-- Dynamic Subtasks -->
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button class="btn-primary" id="drawer-btn-save"><i class="fa-solid fa-check"></i> Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: CREATE / EDIT TASK
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-task-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-task-title"><i class="fa-solid fa-plus-circle" style="color: var(--brand-primary);"></i> Tạo Công Việc Mới</h3>
+          <button class="btn-icon" id="modal-task-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Tên Công Việc *</label>
+            <input type="text" id="task-form-title" class="form-control" placeholder="VD: Tối ưu hoá luồng mua gói VnExpress Premium trên iOS..." required>
+          </div>
+
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label>Dự Án Trực Thuộc *</label>
+              <select id="task-form-project" class="form-control" required>
+                <!-- Projects -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Người Làm (20 Nhân sự) *</label>
+              <select id="task-form-assignee" class="form-control" required>
+                <!-- 20 members -->
+              </select>
+            </div>
+          </div>
+
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label>Nhóm Chuyên Môn *</label>
+              <select id="task-form-team" class="form-control">
+                <option value="Quản lý">Quản lý & PO</option>
+                <option value="UX/UI Designer">UX/UI Designer</option>
+                <option value="SEO">SEO Specialist</option>
+                <option value="Data">Data & AI</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Độ Ưu Tiên</label>
+              <select id="task-form-priority" class="form-control">
+                <option value="Thấp">Thấp</option>
+                <option value="Trung bình" selected>Trung bình</option>
+                <option value="Cao">Cao</option>
+                <option value="Khẩn cấp">Khẩn cấp</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label>Ngày Bắt Đầu</label>
+              <input type="date" id="task-form-start-date" class="form-control" value="2026-09-28">
+            </div>
+            <div class="form-group">
+              <label>Hạn Chót Hoàn Thành *</label>
+              <input type="date" id="task-form-due-date" class="form-control" value="2026-09-28" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Trạng Thái Ban Đầu</label>
+            <select id="task-form-status" class="form-control">
+              <option value="Chưa làm" selected>Chưa làm</option>
+              <option value="Đang làm">Đang làm</option>
+              <option value="Bị nghẽn">Bị nghẽn</option>
+              <option value="Hoàn thành">Hoàn thành</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Mô Tả Công Việc</label>
+            <textarea id="task-form-desc" class="form-control" placeholder="Mô tả cụ thể nhiệm vụ, checklist hoặc tài liệu liên quan..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-task-cancel">Hủy bỏ</button>
+          <button class="btn-primary" id="modal-task-submit"><i class="fa-solid fa-plus"></i> Tạo Công Việc</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: CREATE / EDIT PROJECT (Phases, KPI, Checklist đã làm & tồn tại, Tools)
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-project-overlay">
+      <div class="modal-card" style="max-width: 720px;">
+        <div class="modal-header">
+          <h3 id="modal-project-title"><i class="fa-solid fa-rocket" style="color: var(--brand-primary);"></i> Thông Tin Dự Án</h3>
+          <button class="btn-icon" id="modal-project-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label>Mã Dự Án (Project Code) *</label>
+              <input type="text" id="project-form-code" class="form-control" placeholder="VD: VNE-APP-2026" required>
+            </div>
+            <div class="form-group">
+              <label>Trạng Thái Dự Án *</label>
+              <select id="project-form-status" class="form-control">
+                <option value="Khởi động">Khởi động</option>
+                <option value="Đang triển khai" selected>Đang triển khai</option>
+                <option value="Đang nghiệm thu">Đang nghiệm thu</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+                <option value="Tạm hoãn">Tạm hoãn</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tên Dự Án *</label>
+            <input type="text" id="project-form-name" class="form-control" placeholder="VD: VnExpress Mobile App v5.0 (iOS & Android)" required>
+          </div>
+
+          <div class="form-group">
+            <label>Chỉ Số KPI Của Dự Án *</label>
+            <textarea id="project-form-kpi" class="form-control" style="height: 60px;" placeholder="VD: Đạt 1.500.000 DAU, tăng tỉ lệ Retention D30 lên 45%, thời gian đọc bài +30%..." required></textarea>
+          </div>
+
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label>Ngày Bắt Đầu</label>
+              <input type="date" id="project-form-start-date" class="form-control" value="2026-08-01">
+            </div>
+            <div class="form-group">
+              <label>Ngày Hoàn Thành Dự Kiến</label>
+              <input type="date" id="project-form-end-date" class="form-control" value="2026-12-31">
+            </div>
+          </div>
+
+          <!-- Phases Management -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label><i class="fa-solid fa-timeline"></i> Các Giai Đoạn (Phases / Milestones)</label>
+              <button type="button" class="btn-secondary" id="btn-add-phase-row" style="height: 26px; font-size: 11px; padding: 0 8px;">+ Thêm giai đoạn</button>
+            </div>
+            <div id="project-phases-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Phases -->
+            </div>
+          </div>
+
+          <!-- Checklist: Đã làm được & Còn tồn tại -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label><i class="fa-solid fa-check-double"></i> Checklists (Đã làm được & Còn tồn tại)</label>
+              <button type="button" class="btn-secondary" id="btn-add-checklist-row" style="height: 26px; font-size: 11px; padding: 0 8px;">+ Thêm checklist</button>
+            </div>
+            <div id="project-checklist-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Checklists -->
+            </div>
+          </div>
+
+          <!-- Tools & External Links -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label><i class="fa-solid fa-link"></i> Công Cụ Quản Lý & Liên Kết (Figma, Jira, GA4...)</label>
+              <button type="button" class="btn-secondary" id="btn-add-tool-row" style="height: 26px; font-size: 11px; padding: 0 8px;">+ Thêm liên kết</button>
+            </div>
+            <div id="project-tools-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Tools -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-project-cancel">Hủy bỏ</button>
+          <button class="btn-primary" id="modal-project-submit"><i class="fa-solid fa-floppy-disk"></i> Lưu Dự Án</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL: 20 MEMBERS CREDENTIALS & LOGIN DIRECTORY
+         ===================================================================== -->
+    <div class="modal-overlay" id="modal-credentials-overlay">
+      <div class="modal-card" style="max-width: 820px;">
+        <div class="modal-header">
+          <div>
+            <h3><i class="fa-solid fa-key" style="color: var(--brand-primary);"></i> Danh Mục 20 Tài Khoản Đăng Nhập & Hồ Sơ</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">Hiển thị User / Password, vị trí, email, văn phòng và tình trạng phân công</p>
+          </div>
+          <button class="btn-icon" id="modal-credentials-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh;">
+          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <input type="text" id="filter-cred-input" class="form-control" placeholder="Lọc theo tên, username, vị trí..." style="flex: 1;">
+            <select id="filter-cred-role" class="form-control" style="width: 180px;">
+              <option value="all">Tất cả nhóm</option>
+              <option value="Quản lý">Quản lý</option>
+              <option value="UX/UI Designer">UX/UI Designer</option>
+              <option value="SEO">SEO</option>
+              <option value="Data">Data</option>
+            </select>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="tasks-table">
+              <thead>
+                <tr>
+                  <th>Nhân sự</th>
+                  <th>Username</th>
+                  <th>Mật khẩu</th>
+                  <th>Nhóm & Vị trí</th>
+                  <th>Địa điểm</th>
+                  <th>Email & Liên hệ</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="credentials-table-body">
+                <!-- 20 rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="modal-credentials-ok">Đóng cửa sổ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="initialData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
